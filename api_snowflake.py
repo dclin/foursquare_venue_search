@@ -23,32 +23,21 @@ def get_categories(search_embeddings):
     SELECT index, value, value*value value_sqr  
     FROM search_emb r 
     )
-    , search_product AS (
-    SELECT 
-        v.category_id 
-        , v.index 
-        , s.value * v.value dot_prod 
-        , s.value_sqr  search_value_sqr
-        , v.value * v.value value_sqr 
-    FROM search_emb_sqr s 
-    INNER JOIN category_embed_value v ON s.index = v.index 
-    )
     , result AS (
     SELECT 
-        category_id
-        , SUM(dot_prod) sum_dot_product
-        , SQRT(SUM(search_value_sqr)) * SQRT(SUM(value_sqr)) sum_squre
-        , sum_dot_product / sum_squre cosine_similarity
-    FROM search_product
-    GROUP BY category_id 
-    ORDER BY 4 DESC 
+        v.category_id 
+        , SUM(s.value * v.value) / (SQRT(SUM(s.value * s.value)) * SQRT(SUM(v.value * v.value))) cosine_similarity
+    FROM search_emb_sqr s 
+    INNER JOIN category_embed_value v ON s.index = v.index 
+    GROUP BY v.category_id
+    ORDER BY cosine_similarity DESC 
+    LIMIT 5
     )
     SELECT c.category, r.cosine_similarity
     FROM result r 
     INNER JOIN category_lookup c ON r.category_id = c.category_id
     WHERE r.cosine_similarity > 0.81
     ORDER BY r.cosine_similarity DESC 
-    LIMIT 5
     """.format(search_embeddings)
 
     recommended_categories = _run_query(sql)
