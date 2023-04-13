@@ -1,6 +1,5 @@
 import snowflake.connector 
 from snowflake.connector import DictCursor
-import openai 
 import streamlit as st 
 
 def init_connection():
