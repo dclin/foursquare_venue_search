@@ -5,7 +5,7 @@ import api_openai as oai
 st.set_page_config(page_title="NYC Venue Search", layout="wide", initial_sidebar_state="expanded")
 
 # UI text strings 
-page_title = "Foursquare NYC Venue Search"
+page_title = "NYC Venue Search"
 page_helper = "Discover NYC! The Streamlit app uses cosine similarity to semantically match your query with Foursquare venue categories and find matching venues in your selected areas."
 empty_search_helper = "Select a borough and neighborhood, and enter a search term to get started."
 category_list_header = "Suggested venue categories"

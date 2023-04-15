@@ -81,11 +81,16 @@ borough_id number,
 neighborhood_id number
 )
 
--- Unfortunately, there is no easy way to do this. 
--- Manually look up what Foursquare neighborhoods are in what borough 
--- INSERT INTO borough_neighborhood(neighborhood_id, borough_id) values 
--- (261,3)
--- ... 
+-- Next create a temporary table to store the borough and neighborhood names from NYC_borough_neighborhood.csv.
+-- Assuming you have already created and loaded the data into temp_borough_neighborhood_mapping table.
+
+-- Insert the appropriate borough_id and neighborhood_id into the borough_neighborhood table.
+INSERT INTO borough_neighborhood(neighborhood_id, borough_id) 
+SELECT b.id AS borough_id, n.id AS neighborhood_id
+FROM temp_borough_neighborhood_mapping t
+INNER  JOIN borough_lookup b ON t.borough_name = b.name
+INNER JOIN neighborhood_lookup n ON t.neighborhood_name = n.name
+ORDER BY b.id, n.id
 
 -- ****************************************************************************
 -- Step 4: Categories 
