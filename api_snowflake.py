@@ -134,17 +134,3 @@ def _run_query(query_str):
             cur.execute(query_str)
             return cur.fetchall()
 
-# Used to embed each foursquare category
-# def update_embedding(category_id, embeddings):
-#     sql = """
-#     UPDATE category_lookup 
-#     SET embedding='{0}'
-#     WHERE category_id = {1}
-#     """.format(embeddings, category_id)
-
-#     try:
-#         with conn.cursor() as cs: 
-#             cs.execute(sql)
-#         return 1
-#     except:
-#         return 0 
