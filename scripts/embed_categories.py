@@ -1,13 +1,19 @@
-import streamlit as st 
 import snowflake.connector 
 from snowflake.connector import DictCursor
 import openai 
 
-# create a .streamlit/secrets.toml within setup_scripts folder 
-# need to use a snowflake credential with update permission on the category_lookup table 
-# the SQL here assumes you are in the foursquare.main schema 
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
-openai.api_key = st.secrets['openai']['api_key'] 
+# Snowflake credential with update permission on the category_lookup table 
+# The database and schema of where the category_lookup table is housed.
+snowflake_credential = {
+    'user': "YOUR_SNOWFLAKE_USER",
+    'password': "YOUR_SNOWFLAKE_PASSWORD",
+    'account': "YOUR_SNOWFLAKE_ACCOUNT",
+    'warehouse': "YOUR_SNOWFLAKE_WAREHOUSE",
+    'database': "YOUR_SNOWFLAKE_DATABASE",
+    'schema': "YOUR_SNOWFLAKE_SCHEMA"
+}
 
 def get_embedding(category_str):
     try:
@@ -21,18 +27,19 @@ def get_embedding(category_str):
     except Exception as e: 
         raise e 
 
-@st.cache_resource 
 def init_connection():
-    return snowflake.connector.connect(**st.secrets["snowflake"])
+    return snowflake.connector.connect(**snowflake_credential)
 
 
+# SQL assumes your Snowflake credential is in the database and schema of your category_lookup table
 def get_all_categories(conn):
-    sql = """SELECT category_id, category FROM category_lookup ORDER BY category_id IS NOT NULL"""
+    sql = """SELECT category_id, category FROM category_lookup ORDER BY category_id"""
 
     categories = _run_query(conn,sql)
 
     return categories    
 
+# SQL assumes your Snowflake credential is in the database and schema of your category_lookup table 
 def update_embedding(conn, category_id, embeddings):
     sql = """
     UPDATE category_lookup 
@@ -59,13 +66,13 @@ categories = get_all_categories(conn)
 
 for category in categories: 
     
-    st.write(f"Embed category_id: {category['CATEGORY_ID']}")
+    print(f"Embed category_id: {category['CATEGORY_ID']}")
     try:
         embeddings = get_embedding(category['CATEGORY'])
-        st.write(f"Update category_id: {category['CATEGORY_ID']}")
+        print(f"Update category_id: {category['CATEGORY_ID']}")
         update_category = update_embedding(conn, category['CATEGORY_ID'], embeddings)
         if update_category == 1:
-            st.write(f"Updated category_id: {category['CATEGORY_ID']}")
+            print(f"Updated category_id: {category['CATEGORY_ID']}")
     except: 
         pass 
 

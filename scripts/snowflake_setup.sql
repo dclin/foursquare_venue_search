@@ -467,7 +467,7 @@ SELECT
     , n.value category_id
 FROM foursquare_nyc.standard.places_us_nyc_standard_schema s,
 table(flatten(s.fsq_category_ids)) n 
-ORDER BY category_id, fsq_id 
+ORDER BY category_id, fsq_id; 
 
 
 -- Extract foursquare category IDs  
@@ -488,7 +488,7 @@ table(flatten(s.fsq_category_labels)) l
 WHERE n.index = l.index
 ORDER BY n.seq, n.index, l.seq, l.index 
 )
-SELECT DISTINCT to_number(category_id) category_id, category FROM data ORDER BY category_id 
+SELECT DISTINCT to_number(category_id) category_id, category FROM data ORDER BY category_id; 
 
 
 -- Extract foursquare categories 
@@ -497,7 +497,7 @@ SELECT category_id, value::string category
 FROM z_category_id z
 , table(flatten(input => parse_json(z.category))) c 
 QUALIFY row_number() OVER (PARTITION BY seq ORDER BY index DESC) = 1
-ORDER BY category_id 
+ORDER BY category_id;
 
 
 -- Set up foursquare category lookup tables 
@@ -518,17 +518,22 @@ INNER JOIN z_category_lookup c ON h.category = c.category
 )
 SELECT DISTINCT category, category_id, parent_category_id, root_category_id
 FROM data 
-ORDER BY root_category_id, category_id  
+ORDER BY root_category_id, category_id;  
 
 -- ****************************************************************************
 -- Step 5: Embed categories  
 
 -- Add a column for to store OpenAI embedding values for the categories  
-ALTER TABLE category_lookup add column embedding varchar
+ALTER TABLE category_lookup add column embedding varchar;
 
--- Use a script (or Streamlit app) to loop through all categories. 
--- For each, embed with OpenAI embedding API 
--- Store the embedding vector in the embedding column 
+
+-- run embed_categories.py
+-- Check progress of the script
+SELECT 
+    COUNT(category_id) total_categories
+    , COUNT(DISTINCT CASE WHEN embedding IS NOT NULL THEN category_id END) categories_embedded
+FROM category_lookup;
+
 
 -- Quick lookup used for semantic search 
 CREATE OR REPLACE TRANSIENT TABLE category_embed_value AS 
@@ -547,7 +552,7 @@ SELECT
 FROM category_lookup l 
 , table(flatten(input => parse_json(l.embedding))) n 
 WHERE l.category_id IN (SELECT category_id FROM leaf_category)
-ORDER BY l.category_id, n.index 
+ORDER BY l.category_id, n.index; 
 
 
 -- ****************************************************************************
@@ -555,7 +560,7 @@ ORDER BY l.category_id, n.index
 -- Ordering by fsq_id to improve performance of place lookup queries 
 CREATE OR REPLACE TRANSIENT TABLE place_lookup AS 
 SELECT * FROM foursquare_nyc.standard.places_us_nyc_standard_schema
-ORDER BY fsq_id
+ORDER BY fsq_id;
 
 
 
