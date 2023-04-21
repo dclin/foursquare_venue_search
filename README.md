@@ -24,7 +24,7 @@ Discover NYC with this [Streamlit](https://streamlit.io) app! It utilizes cosine
 Follow these steps to build the app: 
 1. Clone the repository.
 2. Follow the steps in `/scripts/snowflake_setup.sql` to embed the Foursquare venue categories and set up the database and tables in Snowflake.
-3. Create a `streamlit/secrets.toml` file containing the following: 
+3. Create a `.streamlit/secrets.toml` file containing the following: 
 ```
 [snowflake]
 user = ""
