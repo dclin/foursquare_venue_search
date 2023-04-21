@@ -31,18 +31,23 @@ def handler_save_borough_neighborhoods():
 
 def handler_search_venues():
     try:
-        embeddings = oai.get_embedding(st.session_state.user_category_query)
-        st.session_state.suggested_categories = api.get_categories(embeddings)
-        escaped_strings = ["'{}'".format(s['CATEGORY'].replace("'", "\\'")) for s in st.session_state.suggested_categories]
-        st.session_state.suggested_category_str = ','.join(escaped_strings)
-        if st.session_state.suggested_category_str != "":
-            st.session_state.suggested_places = api.get_places(
-                st.session_state.borough_selection, 
-                st.session_state.selected_neighborhood_str, 
-                st.session_state.suggested_category_str)
+        moderation_result = oai.get_moderation(st.session_state.user_category_query)
+        if moderation_result['flagged'] == True: 
+            print(moderation_result)
+            flagged_categories_str = ", ".join(moderation_result['flagged_categories'])
+            st.error(f"⚠️ Your query was flagged by OpenAI's content moderation endpoint for: {flagged_categories_str}.  \n  \nPlease try a different query.")
         else:
-            st.warning("No suggested categories found. Try a different search.")
-
+            embeddings = oai.get_embedding(st.session_state.user_category_query)
+            st.session_state.suggested_categories = api.get_categories(embeddings)
+            escaped_strings = ["'{}'".format(s['CATEGORY'].replace("'", "\\'")) for s in st.session_state.suggested_categories]
+            st.session_state.suggested_category_str = ','.join(escaped_strings)
+            if st.session_state.suggested_category_str != "":
+                st.session_state.suggested_places = api.get_places(
+                    st.session_state.borough_selection, 
+                    st.session_state.selected_neighborhood_str, 
+                    st.session_state.suggested_category_str)
+            else:
+                st.warning("No suggested categories found. Try a different search.")
     except Exception as e: 
         st.error(f"{str(e)}")
 

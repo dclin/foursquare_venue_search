@@ -16,3 +16,17 @@ def get_embedding(category_str):
     except Exception as e: 
         raise e 
 
+
+
+def get_moderation(user_query):
+    try:
+        moderation = openai.Moderation.create(
+            input=user_query
+        )
+        moderation_result = moderation['results'][0]
+        flagged_categories = [category for category, value in moderation_result['categories'].items() if value]
+        return {'flagged': moderation_result['flagged'], 'flagged_categories':flagged_categories}
+    
+    except Exception as e: 
+        raise e 
+    
