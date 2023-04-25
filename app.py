@@ -19,6 +19,9 @@ venue_list_header = "Venue details"
 
 # Handler functions 
 def handler_load_neighborhoods():
+    """
+    Load neighborhoods for the selected borough and update session state.
+    """
     selected_borough = 'Manhattan'
     if "borough_selection" in st.session_state and st.session_state.borough_selection != "":
         selected_borough = st.session_state.borough_selection
@@ -26,10 +29,16 @@ def handler_load_neighborhoods():
     st.session_state.neighborhood_list = [n['NAME'] for n in neighborhoods]
 
 def handler_save_borough_neighborhoods():
+    """
+    Save selected neighborhoods to session state with escaped strings.
+    """
     escaped_strings = ["'{}'".format(s.replace("'", "\\'")) for s in st.session_state.neighborhoods_selection]
     st.session_state.selected_neighborhood_str = ','.join(escaped_strings)
 
 def handler_search_venues():
+    """
+    Search for venues based on user query and update session state with results.
+    """
     try:
         moderation_result = oai.get_moderation(st.session_state.user_category_query)
         if moderation_result['flagged'] == True: 
@@ -60,6 +69,9 @@ def render_cta_link(url, label, font_awesome_icon):
 
 
 def render_search():
+    """
+    Render the search form in the sidebar.
+    """
     search_disabled = True 
     with st.sidebar:
         st.selectbox(label=borough_search_header, options=([b['NAME'] for b in boroughs]), index = 2, key="borough_selection", on_change=handler_load_neighborhoods)
@@ -81,6 +93,9 @@ def render_search():
         render_cta_link(url="https://linkedin.com/in/d2clin", label="Let's connect", font_awesome_icon="fa-linkedin")
 
 def render_search_result():
+    """
+    Render the search results on the main content area.
+    """
     col1, col2 = st.columns([1,2])
     col1.write(category_list_header)
     col1.table(st.session_state.suggested_categories)
