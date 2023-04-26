@@ -2,10 +2,8 @@ import snowflake.connector
 from snowflake.connector import DictCursor
 import streamlit as st 
 
-def init_connection():
-    return snowflake.connector.connect(**st.secrets["snowflake"])
-    
-@st.cache_data(ttl=10, show_spinner=False)
+# External functions 
+ 
 def get_categories(search_embeddings):
     sql = """
     WITH base_search AS (
@@ -44,13 +42,13 @@ def get_categories(search_embeddings):
 
     return recommended_categories
 
-@st.cache_data(ttl=120, show_spinner=False)
+
 def get_boroughs():
     sql = """SELECT * FROM borough_lookup"""
     boroughs = _run_query(sql)
     return boroughs 
 
-@st.cache_data(ttl=30, show_spinner=False)
+
 def get_neighborhoods(borough_name):
     sql = """
     SELECT n.* 
@@ -63,7 +61,7 @@ def get_neighborhoods(borough_name):
     neighborhoods = _run_query(sql)
     return neighborhoods
 
-@st.cache_data(ttl=10, show_spinner=False)
+
 def get_places(borough_name, neighborhood_list, category_list):
     sql = """
     WITH base_neighborhoods AS (
@@ -127,9 +125,15 @@ def get_places(borough_name, neighborhood_list, category_list):
     return places
 
 
+# Internal functions 
+
+def _init_connection():
+    return snowflake.connector.connect(**st.secrets["snowflake"])
+
+
 @st.cache_data(ttl=10, show_spinner=False)
 def _run_query(query_str):
-    with init_connection() as conn:
+    with _init_connection() as conn:
         with conn.cursor(DictCursor) as cur:
             cur.execute(query_str)
             return cur.fetchall()
@@ -137,7 +141,7 @@ def _run_query(query_str):
 
 def _list_to_str(collection_list):
     """
-    Clean a list and save as comma separated strings.
+    Clean a list of strings and save as comma separated strings.
     """
     escaped_strings = ["'{}'".format(s.replace("'", "\\'")) for s in collection_list]
     list_str = ','.join(escaped_strings)
