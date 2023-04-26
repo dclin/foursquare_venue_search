@@ -28,13 +28,6 @@ def handler_load_neighborhoods():
     neighborhoods = api.get_neighborhoods(selected_borough)
     st.session_state.neighborhood_list = [n['NAME'] for n in neighborhoods]
 
-def handler_save_borough_neighborhoods():
-    """
-    Save selected neighborhoods to session state with escaped strings.
-    """
-    escaped_strings = ["'{}'".format(s.replace("'", "\\'")) for s in st.session_state.neighborhoods_selection]
-    st.session_state.selected_neighborhood_str = ','.join(escaped_strings)
-
 def handler_search_venues():
     """
     Search for venues based on user query and update session state with results.
@@ -48,13 +41,14 @@ def handler_search_venues():
         else:
             embeddings = oai.get_embedding(st.session_state.user_category_query)
             st.session_state.suggested_categories = api.get_categories(embeddings)
-            escaped_strings = ["'{}'".format(s['CATEGORY'].replace("'", "\\'")) for s in st.session_state.suggested_categories]
-            st.session_state.suggested_category_str = ','.join(escaped_strings)
-            if st.session_state.suggested_category_str != "":
+
+            if len(st.session_state.suggested_categories) > 0 and len(st.session_state.neighborhoods_selection) > 0: 
+                category_list = [s['CATEGORY'] for s in st.session_state.suggested_categories]
+
                 st.session_state.suggested_places = api.get_places(
                     st.session_state.borough_selection, 
-                    st.session_state.selected_neighborhood_str, 
-                    st.session_state.suggested_category_str)
+                    st.session_state.neighborhoods_selection, 
+                    category_list)
             else:
                 st.warning("No suggested categories found. Try a different search.")
     except Exception as e: 
@@ -77,12 +71,12 @@ def render_search():
         st.selectbox(label=borough_search_header, options=([b['NAME'] for b in boroughs]), index = 2, key="borough_selection", on_change=handler_load_neighborhoods)
 
         if "neighborhood_list" in st.session_state and len(st.session_state.neighborhood_list) > 0:
-            st.multiselect(label=neighborhood_search_header, options=(st.session_state.neighborhood_list), key="neighborhoods_selection", max_selections=5, on_change=handler_save_borough_neighborhoods)
+            st.multiselect(label=neighborhood_search_header, options=(st.session_state.neighborhood_list), key="neighborhoods_selection", max_selections=5)
 
         st.text_input(label=semantic_search_header, placeholder=semantic_search_placeholder, key="user_category_query")
 
         if "borough_selection" in st.session_state and st.session_state.borough_selection != "" \
-            and "selected_neighborhood_str" in st.session_state and st.session_state.selected_neighborhood_str != "" \
+            and "neighborhoods_selection" in st.session_state and len(st.session_state.neighborhoods_selection) > 0  \
             and "user_category_query" in st.session_state and st.session_state.user_category_query != "":
             search_disabled = False 
 

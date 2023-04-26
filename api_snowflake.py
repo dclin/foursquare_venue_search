@@ -64,7 +64,7 @@ def get_neighborhoods(borough_name):
     return neighborhoods
 
 @st.cache_data(ttl=10, show_spinner=False)
-def get_places(borough_name, neighborhood_list_str, category_list_str):
+def get_places(borough_name, neighborhood_list, category_list):
     sql = """
     WITH base_neighborhoods AS (
         SELECT n.id  
@@ -122,7 +122,7 @@ def get_places(borough_name, neighborhood_list_str, category_list_str):
     FROM places 
     GROUP BY fsq_id 
     ORDER BY fsq_id     
-    """.format(borough_name, neighborhood_list_str, category_list_str)
+    """.format(borough_name, _list_to_str(neighborhood_list), _list_to_str(category_list))
     places = _run_query(sql)
     return places
 
@@ -134,3 +134,11 @@ def _run_query(query_str):
             cur.execute(query_str)
             return cur.fetchall()
 
+
+def _list_to_str(collection_list):
+    """
+    Clean a list and save as comma separated strings.
+    """
+    escaped_strings = ["'{}'".format(s.replace("'", "\\'")) for s in collection_list]
+    list_str = ','.join(escaped_strings)
+    return list_str
