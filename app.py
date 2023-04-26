@@ -35,7 +35,6 @@ def handler_search_venues():
     try:
         moderation_result = oai.get_moderation(st.session_state.user_category_query)
         if moderation_result['flagged'] == True: 
-            print(moderation_result)
             flagged_categories_str = ", ".join(moderation_result['flagged_categories'])
             st.error(f"⚠️ Your query was flagged by OpenAI's content moderation endpoint for: {flagged_categories_str}.  \n  \nPlease try a different query.")
         else:
