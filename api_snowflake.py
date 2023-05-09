@@ -24,7 +24,7 @@ def get_categories(search_embeddings):
     , result AS (
     SELECT 
         v.category_id 
-        , SUM(s.value * v.value) / (SQRT(SUM(s.value * s.value)) * SQRT(SUM(v.value * v.value))) cosine_similarity
+        , SUM(s.value * v.value) / SQRT(SUM(s.value * s.value) * SUM(v.value * v.value)) cosine_similarity
     FROM search_emb_sqr s 
     INNER JOIN category_embed_value v ON s.index = v.index 
     GROUP BY v.category_id
