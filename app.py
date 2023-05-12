@@ -93,9 +93,10 @@ def render_search_result():
     col1.write(category_list_header)
     col1.table(st.session_state.suggested_categories)
     col2.write(f"Found {len(st.session_state.suggested_places)} venues.")
-    col2.map(st.session_state.suggested_places, zoom=13, use_container_width=True)
-    st.write(venue_list_header)
-    st.dataframe(data=st.session_state.suggested_places, use_container_width=True)
+    if (len(st.session_state.suggested_places) > 0):
+        col2.map(st.session_state.suggested_places, zoom=13, use_container_width=True)
+        st.write(venue_list_header)
+        st.dataframe(data=st.session_state.suggested_places, use_container_width=True)
 
 
 boroughs = [{'NAME':'Brooklyn'},{'NAME':'Bronx'},{'NAME':'Manhattan'},{'NAME':'Queens'},{'NAME':'Staten Island'}]
